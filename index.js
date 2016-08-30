@@ -49,13 +49,12 @@ program
   });
 
 program
-  .command('purge')
-  .alias('pr')
+  .command('build')
   .description('traverses the bundle path searching for git ' +
                'repositories and populates `pathogenjs.json` ' +
                'with the missing pathogen dependencies.')
   .action(function() {
-    pathogenjs.purge();
+    pathogenjs.build();
   });
 
 program.on('--help', function(){
@@ -66,7 +65,7 @@ program.on('--help', function(){
   console.log('    $ pathogenjs update --all');
   console.log('    $ pathogenjs update tpope/vim-fugitive');
   console.log('    $ pathogenjs remove vim-fugitive');
-  console.log('    $ pathogenjs purge');
+  console.log('    $ pathogenjs build');
   console.log('');
 });
 

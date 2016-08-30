@@ -107,7 +107,7 @@ exports.remove = function(dep) {
   });
 };
 
-exports.purge = function() {
+exports.build = function() {
   var pathToDeps = getPathToDepsFile(pathToDeps);
   var pathToBundle = getPathToBundleDir();
   var deps = require(pathToDeps);
