@@ -20,7 +20,15 @@
     "jsonfile": "^2.3.1",
     "rimraf": "^2.5.4"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tomascaslo/pathogenjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tomascaslo/pathogenjs/issues"
+  },
   "bin": {
     "pathogenjs": "./index.js"
-  }
+  },
+  "homepage": "https://github.com/tomascaslo/pathogenjs"
 }
