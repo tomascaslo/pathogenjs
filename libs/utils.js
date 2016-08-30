@@ -10,31 +10,32 @@ function getUserHome() {
 }
 
 function getPathToDepsFile(pathToDeps) {
-  if (pathToDeps && isAccessable(pathToDeps)) { // Check for user cli specified path
+  if (pathToDeps && isAccessable(pathToDeps)) {
     return pathToDeps;
-  } else {
-    pathToDeps = process.env.PATHOGENJS;	
-    if (pathToDeps && isAccessable(pathToDeps)) { // Check for path specified in the PATHOGENJS env var
+  } else { // eslint-disable-line no-else-return
+    pathToDeps = process.env.PATHOGENJS; // eslint-disable-line no-param-reassign
+    if (pathToDeps && isAccessable(pathToDeps)) {
       return pathToDeps;
-    } else {
+    } else { // eslint-disable-line no-else-return
+      // eslint-disable-next-line no-param-reassign
       pathToDeps = path.join(getUserHome(), '.pathogenjs.json');
-      if (!isAccessable(pathToDeps)) { // Use default file if exists
+      if (!isAccessable(pathToDeps)) {
         jsonfile.writeFileSync(pathToDeps, {});
-      } 
+      }
       return pathToDeps;
     }
   }
 }
 
-function getPathToBundleDir() { // Currently just support the default bundle dir path
+function getPathToBundleDir() {
   return path.join(getUserHome(), '.vim/bundle');
 }
 
-function isAccessable(path) {
+function isAccessable(pathToFile) {
   try {
-    fs.accessSync(path, fs.F_OK);
+    fs.accessSync(pathToFile, fs.F_OK);
     return true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -54,15 +55,15 @@ function find(arr, fn) {
   return arr[index];
 }
 
-function saveJSON(path, obj) {
-  jsonfile.writeFileSync(path, obj, { spaces: 2 });
+function saveJSON(pathToFile, obj) {
+  jsonfile.writeFileSync(pathToFile, obj, { spaces: 2 });
 }
 
 function getRepoNameFromURL(url) {
   var result = /^(?:git|https?):\/\/(?:www\.)?github\.com\/([\w-]+\/([\w\.-]+?))(?:\.git)?$/.exec(url);
   if (result && result.length > 0) {
     return {
-      repo: result[1], 
+      repo: result[1],
       name: result[2]
     };
   }
@@ -72,7 +73,7 @@ function getRepoNameFromURL(url) {
 function bufferToString(buffer) {
   var str = '';
   if (buffer instanceof Array) {
-    buffer.forEach(function(b) {
+    buffer.forEach(function(b) { // eslint-disable-line func-names
       str += b.toString();
     });
   } else {
