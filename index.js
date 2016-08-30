@@ -63,6 +63,8 @@ program.on('--help', function(){
 	console.log('');
 	console.log('    $ pathogenjs install');
 	console.log('    $ pathogenjs install tpope/vim-fugitive');
+	console.log('    $ pathogenjs update --all');
+	console.log('    $ pathogenjs update tpope/vim-fugitive');
 	console.log('    $ pathogenjs remove vim-fugitive');
 	console.log('    $ pathogenjs purge');
 	console.log('');
