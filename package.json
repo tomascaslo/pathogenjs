@@ -1,0 +1,23 @@
+{
+  "name": "pathogenjs",
+  "version": "0.0.1",
+  "description": "A CLI tool for managing vim's pathogen dependencies.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "vim",
+    "pathogen",
+    "pathogenjs"
+  ],
+  "author": "Tomas Castro <tomas.caslo90@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.9.0",
+    "ini": "^1.3.4",
+    "jsonfile": "^2.3.1",
+    "rimraf": "^2.5.4"
+  }
+}
