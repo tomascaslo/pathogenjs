@@ -5,8 +5,10 @@ var path = require('path');
 
 var jsonfile = require('jsonfile');
 
-function getUserHome() {
-  return process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'];
+function getUserHome(platform) {
+  // eslint-disable-next-line no-param-reassign
+  platform = platform ? platform : process.platform;
+  return process.env[(platform === 'win32') ? 'USERPROFILE' : 'HOME'];
 }
 
 function getPathToDepsFile(pathToDeps) {
@@ -27,8 +29,14 @@ function getPathToDepsFile(pathToDeps) {
   }
 }
 
-function getPathToBundleDir() {
-  return path.join(getUserHome(), '.vim/bundle');
+function getPathToBundleDir(platform) {
+  // eslint-disable-next-line no-param-reassign
+  platform = platform ? platform : process.platform;
+  if (platform === 'win32') {
+    return path.win32.join(getUserHome(platform), 'vimfiles', 'bundle');
+  } else { // eslint-disable-line no-else-return
+    return path.join(getUserHome(platform), '.vim', 'bundle');
+  }
 }
 
 function isAccessable(pathToFile) {
@@ -50,9 +58,9 @@ function find(arr, fn) {
   }
 
   var index = 0;
-  while (!fn(arr[index])) index++;
+  while (!fn(arr[index]) && index < arr.length) index++;
 
-  return arr[index];
+  return arr[index] || null;
 }
 
 function saveJSON(pathToFile, obj) {
@@ -71,15 +79,10 @@ function getRepoNameFromURL(url) {
 }
 
 function bufferToString(buffer) {
-  var str = '';
-  if (buffer instanceof Array) {
-    buffer.forEach(function(b) { // eslint-disable-line func-names
-      str += b.toString();
-    });
-  } else {
-    str = buffer.toString();
+  if (!(buffer instanceof Buffer)) {
+    throw Error('`buffer` is not an instance of `Buffer`');
   }
-  return str;
+  return buffer.toString();
 }
 
 exports.getUserHome = getUserHome;
@@ -87,6 +90,8 @@ exports.getUserHome = getUserHome;
 exports.getPathToDepsFile = getPathToDepsFile;
 
 exports.getPathToBundleDir = getPathToBundleDir;
+
+exports.isAccessable = isAccessable;
 
 exports.find = find;
 
