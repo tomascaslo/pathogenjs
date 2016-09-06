@@ -23,6 +23,9 @@ program
   .option('--to [pathToDeps]', 'sets the path of `.pathogenjs.json`. ' +
           'If not specified, it defaults to the users home directory.')
   .option('-S, --save', 'if set, save dependency to `.pathogenjs.json`.')
+  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
+          'be set to the value of this option. If the path does not exist, ' +
+          'the default bundle path will be applied.')
   .action(function(repo, options) { // eslint-disable-line func-names
     pathogenjs.install(repo, options);
   });
@@ -36,6 +39,9 @@ program
                'in the bundle path by doing a `git-pull` from within ' +
                'each plugin.\nIf [dep] is set, --all flag is ignored.')
   .option('-a, --all', 'if set, save dependency to `.pathogenjs.json`.')
+  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
+          'be set to the value of this option. If the path does not exist, ' +
+          'the default bundle path will be applied.')
   .action(function(dep, options) { // eslint-disable-line func-names
     pathogenjs.update(dep, options);
   });
@@ -45,6 +51,9 @@ program
   .alias('rm')
   .description('removes the dependency [dep] from the bundle path ' +
                'and from `.pathogenjs.json`.')
+  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
+          'be set to the value of this option. If the path does not exist, ' +
+          'the default bundle path will be applied.')
   .action(function(dep) { // eslint-disable-line func-names
     pathogenjs.remove(dep);
   });
@@ -54,6 +63,9 @@ program
   .description('traverses the bundle path searching for git ' +
                'repositories and populates `pathogenjs.json` ' +
                'with the missing pathogen dependencies.')
+  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
+          'be set to the value of this option. If the path does not exist, ' +
+          'the default bundle path will be applied.')
   .action(function() { // eslint-disable-line func-names
     pathogenjs.build();
   });

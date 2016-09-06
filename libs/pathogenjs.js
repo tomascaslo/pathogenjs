@@ -1,11 +1,9 @@
-/* eslint no-console: ["warn", { allow: ["info", "error"] }] */
 'use strict';
 
 var fs = require('fs');
 var path = require('path');
 var spawnSync = require('child_process').spawnSync;
 
-var colors = require('colors'); // eslint-disable-line no-unused-vars
 var ini = require('ini');
 var rimraf = require('rimraf');
 
@@ -16,15 +14,16 @@ var getPathToDepsFile = utils.getPathToDepsFile;
 var getPathToBundleDir = utils.getPathToBundleDir;
 var getRepoNameFromURL = utils.getRepoNameFromURL;
 var saveJSON = utils.saveJSON;
+var printOutput = utils.printOutput;
 
 var constants = {
   githubUrl: 'https://www.github.com/',
   gitCmd: 'git'
 };
 
-exports.install = function exports(repo, options) {
+exports.install = function install(repo, options) {
   var pathToDeps = getPathToDepsFile(options.to);
-  var pathToBundle = getPathToBundleDir();
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
   var from = repo;
   var save = options.save;
@@ -32,14 +31,13 @@ exports.install = function exports(repo, options) {
   var gitUrl;
   var results;
 
-
   if (from) {
-    console.info(( 'Installing ' + from + '...' ).green);
+    printOutput(( 'Installing ' + from + '...' ).green);
     gitUrl = constants.githubUrl + from;
     args = ['clone', gitUrl];
     results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
-    console.info(bufferToString(results.stdout).green);
-    console.error(bufferToString(results.stderr).red);
+    printOutput(bufferToString(results.stdout).green);
+    printOutput(bufferToString(results.stderr).red);
     if (save) {
       // eslint-disable-next-line func-names
       var depName = find(from.split(path.sep).reverse(), function(e) {
@@ -51,12 +49,12 @@ exports.install = function exports(repo, options) {
     }
   } else {
     for (var dep in deps) { // eslint-disable-line guard-for-in
-      console.info(( 'Installing ' + dep + '...' ).green);
+      printOutput(( 'Installing ' + dep + '...' ).green);
       gitUrl = constants.githubUrl + deps[dep];
       args = ['clone', gitUrl];
       results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
-      console.info(bufferToString(results.stdout).green);
-      console.error(bufferToString(results.stderr).red);
+      printOutput(bufferToString(results.stdout).green);
+      printOutput(bufferToString(results.stderr).red);
     }
   }
 };
@@ -74,10 +72,10 @@ exports.update = function update(dep, options) {
     fs.stat(tmpPath, function(err, stats) {
       if (err) { throw err; }
       if (stats.isDirectory()) {
-        console.info(( 'Updating ' + dep + '...' ).green);
+        printOutput(( 'Updating ' + dep + '...' ).green);
         results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
-        console.info(bufferToString(results.stdout).green);
-        console.error(bufferToString(results.stderr).red);
+        printOutput(bufferToString(results.stdout).green);
+        printOutput(bufferToString(results.stderr).red);
       }
     });
   } else if (all) {
@@ -93,10 +91,10 @@ exports.update = function update(dep, options) {
         fs.stat(tmpPath, function(err, stats) {
           if (err) { throw err; }
           if (stats.isDirectory()) {
-            console.info(('Updating ' + name + '...').green);
+            printOutput(('Updating ' + name + '...').green);
             results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
-            console.info(bufferToString(results.stdout).green);
-            console.error(bufferToString(results.stderr).red);
+            printOutput(bufferToString(results.stdout).green);
+            printOutput(bufferToString(results.stderr).red);
           }
         });
       })(tmpPath);
@@ -104,9 +102,9 @@ exports.update = function update(dep, options) {
   }
 };
 
-exports.remove = function remove(dep) {
-  var pathToDeps = getPathToDepsFile(pathToDeps);
-  var pathToBundle = getPathToBundleDir();
+exports.remove = function remove(dep, options) {
+  var pathToDeps = getPathToDepsFile(options.to);
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
   var depToDelete = path.join(pathToBundle, dep);
 
@@ -150,7 +148,7 @@ exports.build = function build() {
             }
             if (index === (files.length - 1)) {
               saveJSON(pathToDeps, deps);
-              console.info('Successfully updated `.pathogenjs.json`.'.green);
+              printOutput('Successfully updated `.pathogenjs.json`.'.green);
             }
           }
         });

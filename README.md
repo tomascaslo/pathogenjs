@@ -74,6 +74,11 @@ If you already have Pathogen, you probably have the Pathogen's bundle directory 
 $ pathogenjs build
 ```
 
+## Test
+```bash
+$ npm run test
+```
+
 ## Help
 For more information read:
 

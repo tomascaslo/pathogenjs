@@ -1,9 +1,12 @@
+/* eslint no-console: ["warn", { allow: ["log", "info", "error"] }] */
 'use strict';
 
 var fs = require('fs');
 var path = require('path');
 
 var jsonfile = require('jsonfile');
+
+var TARGET = process.env.npm_lifecycle_event;
 
 function getUserHome(platform) {
   // eslint-disable-next-line no-param-reassign
@@ -29,13 +32,17 @@ function getPathToDepsFile(pathToDeps) {
   }
 }
 
-function getPathToBundleDir(platform) {
-  // eslint-disable-next-line no-param-reassign
-  platform = platform ? platform : process.platform;
-  if (platform === 'win32') {
-    return path.win32.join(getUserHome(platform), 'vimfiles', 'bundle');
+function getPathToBundleDir(platform, customPath) {
+  if (customPath && isAccessable(customPath)) {
+    return customPath;
   } else { // eslint-disable-line no-else-return
-    return path.join(getUserHome(platform), '.vim', 'bundle');
+    // eslint-disable-next-line no-param-reassign
+    platform = platform ? platform : process.platform;
+    if (platform === 'win32') {
+      return path.win32.join(getUserHome(platform), 'vimfiles', 'bundle');
+    } else { // eslint-disable-line no-else-return
+      return path.join(getUserHome(platform), '.vim', 'bundle');
+    }
   }
 }
 
@@ -85,6 +92,22 @@ function bufferToString(buffer) {
   return buffer.toString();
 }
 
+function printOutput(output, type) {
+  type = type || 'normal'; // eslint-disable-line no-param-reassign
+  if (!(/^test.*/.test(TARGET))) {
+    switch (type) {
+    case 'normal':
+      console.info(output);
+      break;
+    case 'error':
+      console.error(output);
+      break;
+    default:
+      console.log(output);
+    }
+  }
+}
+
 exports.getUserHome = getUserHome;
 
 exports.getPathToDepsFile = getPathToDepsFile;
@@ -100,3 +123,5 @@ exports.saveJSON = saveJSON;
 exports.getRepoNameFromURL = getRepoNameFromURL;
 
 exports.bufferToString = bufferToString;
+
+exports.printOutput = printOutput;

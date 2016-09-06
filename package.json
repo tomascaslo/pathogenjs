@@ -4,7 +4,9 @@
   "description": "A CLI tool for installing, updating, and removing Vim plugins easily by augmenting Pathogen.",
   "main": "index.js",
   "scripts": {
-    "patch-release": "npm version patch && npm publish && git push --follow-tags"
+    "patch-release": "npm version patch && npm publish && git push --follow-tags",
+    "test": "mocha $(find test -name '*.js')",
+    "test:watch": "npm run test -- --watch"
   },
   "keywords": [
     "vim",
