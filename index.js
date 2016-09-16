@@ -14,6 +14,16 @@ program
   .usage('[options] [command]\n\n  ' + packageJSON.description);
 
 program
+  .command('list')
+  .alias('ls')
+  .description('lists dependencies currently installed.')
+  .option('--enabled', 'list only enabled dependencies.')
+  .option('--disabled', 'list only disabled dependencies.')
+  .action(function(options) {
+    pathogenjs.list(options);
+  });
+
+program
   .command('install [repo]')
   .alias('i')
   .description('creates default `.pathogenjs.json` file if it doesn\'t ' +

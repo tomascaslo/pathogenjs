@@ -24,6 +24,32 @@ var constants = {
   gitCmd: 'git'
 };
 
+exports.list = function list(options) {
+  var pathToDeps = getPathToDepsFile(options.to);
+  var deps = require(pathToDeps);
+  var disabled = {};
+  var dep;
+
+  if (options.enabled) {
+    printDeps(deps, 'Enabled', 'green');
+  } else if (options.disabled) {
+    deps = deps.disabled || disabled;
+    printDeps(deps, 'Disabled', 'yellow');
+  } else {
+    printDeps(deps, 'Enabled', 'green');
+    deps = deps.disabled || disabled;
+    printDeps(deps, 'Disabled', 'yellow');
+  }
+
+  // eslint-disable-next-line no-shadow
+  function printDeps(deps, title, color) {
+    printOutput((title + ':')[color]);
+    for (dep in deps) { // eslint-disable-line guard-for-in
+      printOutput(('\t' + dep)[color]);
+    }
+  }
+};
+
 exports.install = function install(repo, options) {
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
