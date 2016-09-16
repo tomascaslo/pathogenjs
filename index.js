@@ -59,6 +59,22 @@ program
   });
 
 program
+  .command('disable [deps...]')
+  .alias('dis')
+  .description('disables the list of dependencies specified in [deps...].')
+  .action(function(deps) {  // eslint-disable-line func-names
+    pathogenjs.disable(deps);
+  });
+
+program
+  .command('enable [deps...]')
+  .alias('en')
+  .description('enables the list of dependencies specified in [deps...].')
+  .action(function(deps) {  // eslint-disable-line func-names
+    pathogenjs.enable(deps);
+  });
+
+program
   .command('build')
   .description('traverses the bundle path searching for git ' +
                'repositories and populates `pathogenjs.json` ' +

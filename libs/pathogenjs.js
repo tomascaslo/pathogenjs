@@ -6,10 +6,12 @@ var spawnSync = require('child_process').spawnSync;
 
 var ini = require('ini');
 var rimraf = require('rimraf');
+var colors = require('colors'); // eslint-disable-line no-unused-vars
 
 var utils = require('./utils');
 var bufferToString = utils.bufferToString;
 var isAccessable = utils.isAccessable;
+var isDirectory = utils.isDirectory;
 var find = utils.find;
 var getPathToDepsFile = utils.getPathToDepsFile;
 var getPathToBundleDir = utils.getPathToBundleDir;
@@ -156,6 +158,89 @@ exports.build = function build() {
           }
         });
       })(tmpPath);
+    });
+  });
+};
+
+exports.disable = function disable(depsToDisable) {
+  var pathToDeps = getPathToDepsFile();
+  var pathToBundle = getPathToBundleDir();
+  var deps = require(pathToDeps);
+  var disabledDir = path.join(pathToBundle, '.disabled');
+  var newPath;
+  var currentPath;
+
+  if (depsToDisable.length === 0) {
+    printOutput('No dependencies to disable were specified.'.red);
+    process.exit(); // eslint-disable-line no-process-exit
+  }
+
+  if (!isDirectory(disabledDir)) {
+    fs.mkdirSync(disabledDir);
+  }
+
+  // eslint-disable-next-line func-names
+  fs.readdir(pathToBundle, function(err, files) {
+    if (err) { throw err; }
+
+    // eslint-disable-next-line func-names
+    depsToDisable.forEach(function(dep) {
+      if (files.indexOf(dep) > -1) {
+        currentPath = path.join(pathToBundle, dep);
+        newPath = path.join(disabledDir, dep);
+        fs.renameSync(currentPath, newPath);
+        if (dep in deps) {
+          deps.disabled = deps.disabled || {};
+          deps.disabled[dep] = deps[dep];
+          delete deps[dep];
+          saveJSON(pathToDeps, deps);
+        }
+        printOutput(('Successfully disabled `' + dep + '`.').green);
+      } else {
+        printOutput(('Dependency `' + dep + '` is not installed or it ' +
+                     'is named differently. No action taken.').blue);
+      }
+    });
+  });
+};
+
+exports.enable = function enable(depsToEnable) {
+  var pathToDeps = getPathToDepsFile();
+  var pathToBundle = getPathToBundleDir();
+  var deps = require(pathToDeps);
+  var disabledDir = path.join(pathToBundle, '.disabled');
+  var newPath;
+  var currentPath;
+
+  if (depsToEnable.length === 0) {
+    printOutput('No dependencies to enable were specified.'.red);
+    process.exit(); // eslint-disable-line no-process-exit
+  }
+
+  if (!isDirectory(disabledDir)) {
+    fs.mkdirSync(disabledDir);
+  }
+
+  // eslint-disable-next-line func-names
+  fs.readdir(disabledDir, function(err, files) {
+    if (err) { throw err; }
+
+    // eslint-disable-next-line func-names
+    depsToEnable.forEach(function(dep) {
+      if (files.indexOf(dep) > -1) {
+        currentPath = path.join(disabledDir, dep);
+        newPath = path.join(pathToBundle, dep);
+        fs.renameSync(currentPath, newPath);
+        if (deps.disabled && dep in deps.disabled) {
+          deps[dep] = deps.disabled[dep];
+          delete deps.disabled[dep];
+          saveJSON(pathToDeps, deps);
+        }
+        printOutput(('Successfully enabled `' + dep + '`.').green);
+      } else {
+        printOutput(('Dependency `' + dep + '` is not disabled or it ' +
+                     'is named differently. No action taken.').blue);
+      }
     });
   });
 };

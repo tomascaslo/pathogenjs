@@ -55,6 +55,15 @@ function isAccessable(pathToFile) {
   }
 }
 
+function isDirectory(pathToDir) {
+  try {
+    var stats = fs.statSync(pathToDir);
+    return stats.isDirectory();
+  } catch (e) {
+    return false;
+  }
+}
+
 function find(arr, fn) {
   if (!(arr instanceof Array)) {
     throw Error('`arr` must be an Array');
@@ -115,6 +124,8 @@ exports.getPathToDepsFile = getPathToDepsFile;
 exports.getPathToBundleDir = getPathToBundleDir;
 
 exports.isAccessable = isAccessable;
+
+exports.isDirectory = isDirectory;
 
 exports.find = find;
 
