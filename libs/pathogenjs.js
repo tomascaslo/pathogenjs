@@ -9,6 +9,7 @@ var rimraf = require('rimraf');
 
 var utils = require('./utils');
 var bufferToString = utils.bufferToString;
+var isAccessable = utils.isAccessable;
 var find = utils.find;
 var getPathToDepsFile = utils.getPathToDepsFile;
 var getPathToBundleDir = utils.getPathToBundleDir;
@@ -34,24 +35,26 @@ exports.install = function install(repo, options) {
   if (from) {
     printOutput(( 'Installing ' + from + '...' ).green);
     gitUrl = constants.githubUrl + from;
-    args = ['clone', gitUrl];
+    args = ('clone ' + gitUrl).split(' ');
     results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
     printOutput(bufferToString(results.stdout).green);
     printOutput(bufferToString(results.stderr).red);
     if (save) {
       // eslint-disable-next-line func-names
-      var depName = find(from.split(path.sep).reverse(), function(e) {
+      var depName = find(from.split('/').reverse(), function(e) {
         if (e === '') { return false; }
         return true;
       });
-      deps[depName] = from;
-      saveJSON(pathToDeps, deps);
+      if (isAccessable(path.join(pathToBundle, depName))) {
+        deps[depName] = from;
+        saveJSON(pathToDeps, deps);
+      }
     }
   } else {
     for (var dep in deps) { // eslint-disable-line guard-for-in
       printOutput(( 'Installing ' + dep + '...' ).green);
       gitUrl = constants.githubUrl + deps[dep];
-      args = ['clone', gitUrl];
+      args = ('clone ' + gitUrl).split(' ');
       results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
       printOutput(bufferToString(results.stdout).green);
       printOutput(bufferToString(results.stderr).red);
@@ -62,7 +65,7 @@ exports.install = function install(repo, options) {
 exports.update = function update(dep, options) {
   var pathToBundle = getPathToBundleDir();
   var all = options.all;
-  var args = ['pull', 'origin', 'master'];
+  var args = 'pull origin master'.split(' ');
   var results;
   var tmpPath;
 
