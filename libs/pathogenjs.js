@@ -63,7 +63,7 @@ exports.install = function install(repo, options) {
   if (from) {
     printOutput(( 'Installing ' + from + '...' ).green);
     gitUrl = constants.githubUrl + from;
-    args = ('clone ' + gitUrl).split(' ');
+    args = ( 'clone ' + gitUrl ).split(' ');
     results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
     printOutput(bufferToString(results.stdout).green);
     printOutput(bufferToString(results.stderr).red);
@@ -79,14 +79,17 @@ exports.install = function install(repo, options) {
       }
     }
   } else {
-    for (var dep in deps) { // eslint-disable-line guard-for-in
-      printOutput(( 'Installing ' + dep + '...' ).green);
-      gitUrl = constants.githubUrl + deps[dep];
-      args = ('clone ' + gitUrl).split(' ');
-      results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
-      printOutput(bufferToString(results.stdout).green);
-      printOutput(bufferToString(results.stderr).red);
-    }
+    // eslint-disable-next-line func-names
+    Object.keys(deps).forEach(function(name) {
+      if (name !== 'disabled') {
+        printOutput(( 'Installing ' + name + '...' ).green);
+        gitUrl = constants.githubUrl + deps[name];
+        args = ( 'clone ' + gitUrl ).split(' ');
+        results = spawnSync(constants.gitCmd, args, { cwd: pathToBundle });
+        printOutput(bufferToString(results.stdout).green);
+        printOutput(bufferToString(results.stderr).red);
+      }
+    });
   }
 };
 
@@ -112,23 +115,26 @@ exports.update = function update(dep, options) {
   } else if (all) {
     var pathToDeps = getPathToDepsFile(options.to);
     var deps = require(pathToDeps);
+
     // eslint-disable-next-line func-names
     Object.keys(deps).forEach(function(name) {
-      tmpPath = path.join(pathToBundle, name);
+      if (name !== 'disabled') {
+        tmpPath = path.join(pathToBundle, name);
 
-      // eslint-disable-next-line func-names, no-shadow
-      (function(tmpPath) {
-        // eslint-disable-next-line func-names
-        fs.stat(tmpPath, function(err, stats) {
-          if (err) { throw err; }
-          if (stats.isDirectory()) {
-            printOutput(('Updating ' + name + '...').green);
-            results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
-            printOutput(bufferToString(results.stdout).green);
-            printOutput(bufferToString(results.stderr).red);
-          }
-        });
-      })(tmpPath);
+        // eslint-disable-next-line func-names, no-shadow
+        (function(tmpPath) {
+          // eslint-disable-next-line func-names
+          fs.stat(tmpPath, function(err, stats) {
+            if (err) { throw err; }
+            if (stats.isDirectory()) {
+              printOutput(( 'Updating ' + name + '...' ).green);
+              results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
+              printOutput(bufferToString(results.stdout).green);
+              printOutput(bufferToString(results.stderr).red);
+            }
+          });
+        })(tmpPath);
+      }
     });
   }
 };
