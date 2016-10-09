@@ -6,7 +6,7 @@
   "scripts": {
     "patch-release": "npm test && npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm test && npm version minor && npm publish && git push --follow-tags",
-    "test": "mocha $(find test -name '*.js')",
+    "test": "istanbul cover _mocha -- -R spec $(find test -name '*.js')",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [
@@ -38,6 +38,7 @@
     "babel-eslint": "^6.1.2",
     "chai": "^3.5.0",
     "eslint-plugin-react": "^6.2.0",
+    "istanbul": "^0.4.5",
     "mocha": "^3.0.2",
     "mock-fs": "^3.11.0"
   }
