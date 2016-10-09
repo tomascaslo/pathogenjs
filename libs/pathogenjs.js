@@ -25,6 +25,7 @@ var constants = {
 };
 
 function list(options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var deps = require(pathToDeps);
   var disabled = {};
@@ -51,6 +52,7 @@ function list(options) {
 }
 
 function install(repo, options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -94,6 +96,7 @@ function install(repo, options) {
 }
 
 function update(dep, options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var all = options.all;
   var args = 'pull origin master'.split(' ');
@@ -132,6 +135,7 @@ function update(dep, options) {
 }
 
 function remove(dep, options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -145,6 +149,7 @@ function remove(dep, options) {
 }
 
 function build(options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -180,6 +185,7 @@ function build(options) {
 }
 
 function disable(depsToDisable, options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -219,6 +225,7 @@ function disable(depsToDisable, options) {
 }
 
 function enable(depsToEnable, options) {
+  options = options || {}; // eslint-disable-line no-param-reassign
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
