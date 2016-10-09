@@ -1,7 +1,7 @@
 /* eslint no-console: ["warn", { allow: ["log", "info", "error"] }] */
 'use strict';
 
-var fs = require('fs');
+var fs   = require('fs');
 var path = require('path');
 
 var jsonfile = require('jsonfile');

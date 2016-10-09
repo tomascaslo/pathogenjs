@@ -12,6 +12,14 @@ $ npm install -g pathogenjs
 ## Dependencies
 Pathogenjs works by augmenting [Pathogen's](https://github.com/tpope/vim-pathogen) out of the box functionality, so assuming you have [nodejs](https://nodejs.org) and [npm](https://www.npmjs.com/) already installed, along with Pathogen installed and configured, you're set.
 
+## List plugins
+List the plugins currently installed, enabled and disabled, according to your `.pathogenjs.json` file.
+
+```bash
+$ pathogenjs list
+```
+Use with `--enabled` or `--disabled` flags to print only the specified group.
+
 ## Installing plugins
 Pathogenjs works by git-cloning a Github repository that holds a Vim plugin and installing it under the Pathogen's bundle directory (it currently supports the default `~/.vim/bundle/` directory, only). To install a plugin you need to specify the repository's user along with the name of the repository.
 
@@ -73,10 +81,38 @@ If you already have Pathogen, you probably have the Pathogen's bundle directory 
 ```bash
 $ pathogenjs build
 ```
+This only supports plugins using git.
+
+## Disabling plugins
+There are times when you want to disable a plugin to maybe test another one that has some default key mappings that overlap, or perhaps both have a similar purpose and you don't want to erase any of them. For those kind of situations Pathogenjs provides a mechanism to disable plugins by putting them in a special `.disabled` directory, which is created by Pathogenjs as a mechanism to hide currently unwanted plugins. Pathogenjs keeps track of enabled and disabled plugins in `.pathogenjs.json`.
+
+```bash
+$ pathogenjs disable [plugins...]
+```
+**Example:**
+
+```bash
+$ pathogenjs disable vim-fugitive vim-sensible
+```
+
+You can always list disabled plugins by using `pathogenjs list --disabled`.
+
+## Enabling plugins
+By default plugins are enabled when installed. Enabling a plugin just means moving the plugin from the `.disabled` directory to your Pathogen's bundle directory.
+
+```bash
+$ pathogenjs enable [plugins...]
+```
+**Example:**
+
+```bash
+$ pathogenjs enable vim-fugitive vim-sensible
+```
+You can always list enabled plugins by using `pathogenjs list --enabled`.
 
 ## Test
 ```bash
-$ npm run test
+$ npm test
 ```
 
 ## Help

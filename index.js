@@ -42,7 +42,7 @@ program
 
 program
   .command('update [dep]')
-  .alias('u')
+  .alias('up')
   .description('updates [dep] by doing a `git-pull` from within the plugin.' +
                'If [dep] is not specified it traverses the `pathogenjs.json` ' +
                'file and updates each of the dependencies being tracked ' +
@@ -69,6 +69,18 @@ program
   });
 
 program
+  .command('build')
+  .description('traverses the bundle path searching for git ' +
+               'repositories and populates `pathogenjs.json` ' +
+               'with the missing pathogen dependencies.')
+  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
+          'be set to the value of this option. If the path does not exist, ' +
+          'the default bundle path will be applied.')
+  .action(function() { // eslint-disable-line func-names
+    pathogenjs.build();
+  });
+
+program
   .command('disable [deps...]')
   .alias('dis')
   .description('disables the list of dependencies specified in [deps...].')
@@ -84,26 +96,17 @@ program
     pathogenjs.enable(deps);
   });
 
-program
-  .command('build')
-  .description('traverses the bundle path searching for git ' +
-               'repositories and populates `pathogenjs.json` ' +
-               'with the missing pathogen dependencies.')
-  .option('--custom-path-bundle', 'if set, the bundle directory path will ' +
-          'be set to the value of this option. If the path does not exist, ' +
-          'the default bundle path will be applied.')
-  .action(function() { // eslint-disable-line func-names
-    pathogenjs.build();
-  });
-
 program.on('--help', function() { // eslint-disable-line func-names
   console.info('  Examples:');
   console.info('');
+  console.info('    $ pathogenjs ls');
   console.info('    $ pathogenjs install');
   console.info('    $ pathogenjs install tpope/vim-fugitive');
   console.info('    $ pathogenjs update --all');
   console.info('    $ pathogenjs update tpope/vim-fugitive');
   console.info('    $ pathogenjs remove vim-fugitive');
+  console.info('    $ pathogenjs enable vim-fugitive');
+  console.info('    $ pathogenjs disable vim-fugitive');
   console.info('    $ pathogenjs build');
   console.info('');
 });

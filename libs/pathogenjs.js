@@ -1,30 +1,30 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
+var fs        = require('fs');
+var path      = require('path');
 var spawnSync = require('child_process').spawnSync;
 
-var ini = require('ini');
+var ini    = require('ini');
 var rimraf = require('rimraf');
 var colors = require('colors'); // eslint-disable-line no-unused-vars
 
-var utils = require('./utils');
-var bufferToString = utils.bufferToString;
-var isAccessable = utils.isAccessable;
-var isDirectory = utils.isDirectory;
-var find = utils.find;
-var getPathToDepsFile = utils.getPathToDepsFile;
+var utils              = require('./utils');
+var bufferToString     = utils.bufferToString;
+var isAccessable       = utils.isAccessable;
+var isDirectory        = utils.isDirectory;
+var find               = utils.find;
+var getPathToDepsFile  = utils.getPathToDepsFile;
 var getPathToBundleDir = utils.getPathToBundleDir;
 var getRepoNameFromURL = utils.getRepoNameFromURL;
-var saveJSON = utils.saveJSON;
-var printOutput = utils.printOutput;
+var saveJSON           = utils.saveJSON;
+var printOutput        = utils.printOutput;
 
 var constants = {
   githubUrl: 'https://www.github.com/',
   gitCmd: 'git'
 };
 
-exports.list = function list(options) {
+function list(options) {
   var pathToDeps = getPathToDepsFile(options.to);
   var deps = require(pathToDeps);
   var disabled = {};
@@ -48,9 +48,9 @@ exports.list = function list(options) {
       printOutput(('\t' + dep)[color]);
     }
   }
-};
+}
 
-exports.install = function install(repo, options) {
+function install(repo, options) {
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -91,27 +91,26 @@ exports.install = function install(repo, options) {
       }
     });
   }
-};
+}
 
-exports.update = function update(dep, options) {
-  var pathToBundle = getPathToBundleDir();
+function update(dep, options) {
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var all = options.all;
   var args = 'pull origin master'.split(' ');
   var results;
   var tmpPath;
+  var stats;
 
   if (dep) {
     tmpPath = path.join(pathToBundle, dep);
     // eslint-disable-next-line func-names
-    fs.stat(tmpPath, function(err, stats) {
-      if (err) { throw err; }
-      if (stats.isDirectory()) {
-        printOutput(( 'Updating ' + dep + '...' ).green);
-        results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
-        printOutput(bufferToString(results.stdout).green);
-        printOutput(bufferToString(results.stderr).red);
-      }
-    });
+    stats = fs.statSync(tmpPath);
+    if (stats.isDirectory()) {
+      printOutput(( 'Updating ' + dep + '...' ).green);
+      results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
+      printOutput(bufferToString(results.stdout).green);
+      printOutput(bufferToString(results.stderr).red);
+    }
   } else if (all) {
     var pathToDeps = getPathToDepsFile(options.to);
     var deps = require(pathToDeps);
@@ -120,26 +119,19 @@ exports.update = function update(dep, options) {
     Object.keys(deps).forEach(function(name) {
       if (name !== 'disabled') {
         tmpPath = path.join(pathToBundle, name);
-
-        // eslint-disable-next-line func-names, no-shadow
-        (function(tmpPath) {
-          // eslint-disable-next-line func-names
-          fs.stat(tmpPath, function(err, stats) {
-            if (err) { throw err; }
-            if (stats.isDirectory()) {
-              printOutput(( 'Updating ' + name + '...' ).green);
-              results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
-              printOutput(bufferToString(results.stdout).green);
-              printOutput(bufferToString(results.stderr).red);
-            }
-          });
-        })(tmpPath);
+        stats = fs.statSync(tmpPath);
+        if (stats.isDirectory()) {
+          printOutput(( 'Updating ' + name + '...' ).green);
+          results = spawnSync(constants.gitCmd, args, { cwd: tmpPath });
+          printOutput(bufferToString(results.stdout).green);
+          printOutput(bufferToString(results.stderr).red);
+        }
       }
     });
   }
-};
+}
 
-exports.remove = function remove(dep, options) {
+function remove(dep, options) {
   var pathToDeps = getPathToDepsFile(options.to);
   var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
@@ -150,57 +142,51 @@ exports.remove = function remove(dep, options) {
     delete deps[dep];
     saveJSON(pathToDeps, deps);
   });
-};
+}
 
-exports.build = function build() {
-  var pathToDeps = getPathToDepsFile(pathToDeps);
-  var pathToBundle = getPathToBundleDir();
+function build(options) {
+  var pathToDeps = getPathToDepsFile(options.to);
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
   var tmpPath;
   var gitConfig;
   var repoUrl;
   var depData;
+  var files;
+  var stats;
+
+  files = fs.readdirSync(pathToBundle);
 
   // eslint-disable-next-line func-names
-  fs.readdir(pathToBundle, function(err, files) {
-    if (err) { throw err; }
+  files.forEach(function(file, index) {
+    tmpPath = path.join(pathToBundle, file);
 
-    // eslint-disable-next-line func-names
-    files.forEach(function(file, index) {
-      tmpPath = path.join(pathToBundle, file);
-
-      // eslint-disable-next-line func-names, no-shadow
-      (function(tmpPath) {
-        // eslint-disable-next-line func-names, no-shadow
-        fs.stat(tmpPath, function(err, stats) {
-          if (err) { throw err; }
-          if (stats.isDirectory()) {
-            // eslint-disable-next-line no-param-reassign
-            tmpPath = path.join(tmpPath, '.git', 'config');
-            gitConfig = ini.parse(fs.readFileSync(tmpPath, 'utf-8'));
-            repoUrl = gitConfig['remote "origin"'].url;
-            depData = getRepoNameFromURL(repoUrl);
-            if (depData && typeof depData !== 'undefined') {
-              deps[depData.name] = depData.repo;
-            }
-            if (index === (files.length - 1)) {
-              saveJSON(pathToDeps, deps);
-              printOutput('Successfully updated `.pathogenjs.json`.'.green);
-            }
-          }
-        });
-      })(tmpPath);
-    });
+    stats = fs.statSync(tmpPath);
+    if (stats.isDirectory()) {
+      // eslint-disable-next-line no-param-reassign
+      tmpPath = path.join(tmpPath, '.git', 'config');
+      gitConfig = ini.parse(fs.readFileSync(tmpPath, 'utf-8'));
+      repoUrl = gitConfig['remote "origin"'].url;
+      depData = getRepoNameFromURL(repoUrl);
+      if (depData && typeof depData !== 'undefined') {
+        deps[depData.name] = depData.repo;
+      }
+      if (index === (files.length - 1)) {
+        saveJSON(pathToDeps, deps);
+        printOutput('Successfully updated `.pathogenjs.json`.'.green);
+      }
+    }
   });
-};
+}
 
-exports.disable = function disable(depsToDisable) {
-  var pathToDeps = getPathToDepsFile();
-  var pathToBundle = getPathToBundleDir();
+function disable(depsToDisable, options) {
+  var pathToDeps = getPathToDepsFile(options.to);
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
   var disabledDir = path.join(pathToBundle, '.disabled');
   var newPath;
   var currentPath;
+  var files;
 
   if (depsToDisable.length === 0) {
     printOutput('No dependencies to disable were specified.'.red);
@@ -211,38 +197,35 @@ exports.disable = function disable(depsToDisable) {
     fs.mkdirSync(disabledDir);
   }
 
+  files = fs.readdirSync(pathToBundle);
   // eslint-disable-next-line func-names
-  fs.readdir(pathToBundle, function(err, files) {
-    if (err) { throw err; }
-
-    // eslint-disable-next-line func-names
-    depsToDisable.forEach(function(dep) {
-      if (files.indexOf(dep) > -1) {
-        currentPath = path.join(pathToBundle, dep);
-        newPath = path.join(disabledDir, dep);
-        fs.renameSync(currentPath, newPath);
-        if (dep in deps) {
-          deps.disabled = deps.disabled || {};
-          deps.disabled[dep] = deps[dep];
-          delete deps[dep];
-          saveJSON(pathToDeps, deps);
-        }
-        printOutput(('Successfully disabled `' + dep + '`.').green);
-      } else {
-        printOutput(('Dependency `' + dep + '` is not installed or it ' +
-                     'is named differently. No action taken.').blue);
+  depsToDisable.forEach(function(dep) {
+    if (files.indexOf(dep) > -1) {
+      currentPath = path.join(pathToBundle, dep);
+      newPath = path.join(disabledDir, dep);
+      fs.renameSync(currentPath, newPath);
+      if (dep in deps) {
+        deps.disabled = deps.disabled || {};
+        deps.disabled[dep] = deps[dep];
+        delete deps[dep];
+        saveJSON(pathToDeps, deps);
       }
-    });
+      printOutput(('Successfully disabled `' + dep + '`.').green);
+    } else {
+      printOutput(('Dependency `' + dep + '` is not installed or it ' +
+                   'is named differently. No action taken.').blue);
+    }
   });
-};
+}
 
-exports.enable = function enable(depsToEnable) {
-  var pathToDeps = getPathToDepsFile();
-  var pathToBundle = getPathToBundleDir();
+function enable(depsToEnable, options) {
+  var pathToDeps = getPathToDepsFile(options.to);
+  var pathToBundle = getPathToBundleDir(null, options.customPathBundle);
   var deps = require(pathToDeps);
   var disabledDir = path.join(pathToBundle, '.disabled');
   var newPath;
   var currentPath;
+  var files;
 
   if (depsToEnable.length === 0) {
     printOutput('No dependencies to enable were specified.'.red);
@@ -254,25 +237,37 @@ exports.enable = function enable(depsToEnable) {
   }
 
   // eslint-disable-next-line func-names
-  fs.readdir(disabledDir, function(err, files) {
-    if (err) { throw err; }
+  files = fs.readdirSync(disabledDir);
 
-    // eslint-disable-next-line func-names
-    depsToEnable.forEach(function(dep) {
-      if (files.indexOf(dep) > -1) {
-        currentPath = path.join(disabledDir, dep);
-        newPath = path.join(pathToBundle, dep);
-        fs.renameSync(currentPath, newPath);
-        if (deps.disabled && dep in deps.disabled) {
-          deps[dep] = deps.disabled[dep];
-          delete deps.disabled[dep];
-          saveJSON(pathToDeps, deps);
-        }
-        printOutput(('Successfully enabled `' + dep + '`.').green);
-      } else {
-        printOutput(('Dependency `' + dep + '` is not disabled or it ' +
-                     'is named differently. No action taken.').blue);
+  // eslint-disable-next-line func-names
+  depsToEnable.forEach(function(dep) {
+    if (files.indexOf(dep) > -1) {
+      currentPath = path.join(disabledDir, dep);
+      newPath = path.join(pathToBundle, dep);
+      fs.renameSync(currentPath, newPath);
+      if (deps.disabled && dep in deps.disabled) {
+        deps[dep] = deps.disabled[dep];
+        delete deps.disabled[dep];
+        saveJSON(pathToDeps, deps);
       }
-    });
+      printOutput(('Successfully enabled `' + dep + '`.').green);
+    } else {
+      printOutput(('Dependency `' + dep + '` is not disabled or it ' +
+                   'is named differently. No action taken.').blue);
+    }
   });
-};
+}
+
+exports.list = list;
+
+exports.install = install;
+
+exports.update = update;
+
+exports.remove = remove;
+
+exports.build = build;
+
+exports.disable = disable;
+
+exports.enable = enable;

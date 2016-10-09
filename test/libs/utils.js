@@ -15,6 +15,7 @@ var getUserHome = utils.getUserHome;
 var getPathToDepsFile = utils.getPathToDepsFile;
 var getPathToBundleDir = utils.getPathToBundleDir;
 var isAccessable = utils.isAccessable;
+var isDirectory = utils.isDirectory;
 var find = utils.find;
 var saveJSON = utils.saveJSON;
 var getRepoNameFromURL = utils.getRepoNameFromURL;
@@ -92,12 +93,32 @@ describe('utils', function() {
       });
     });
 
-    it('should return `true`', function() {
+    it('should return `true` if file is accessable', function() {
       isAccessable('/home/user/.pathogenjs.json').should.be.true;
     });
 
-    it('should return `false`', function() {
+    it('should return `false` if file is not accessable', function() {
       isAccessable('/home/user/other/.pathogenjs.json').should.be.false;
+    });
+
+    after('restore fs', function() {
+      mock.restore();
+    });
+  });
+
+  describe('isDirectory()', function() {
+    before('init mock fs', function() {
+      mock({
+        '/home/user/.vim/bundle/.disabled': {}
+      });
+    });
+
+    it('should return `true` if path is directory', function() {
+      isDirectory('/home/user/.vim/bundle/.disabled').should.be.true;
+    });
+
+    it('should return `false` if path is not directory', function() {
+      isDirectory('/home/user/.vim/bundle/.other').should.be.false;
     });
 
     after('restore fs', function() {
